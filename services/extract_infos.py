@@ -55,7 +55,7 @@ class extractionInformationService(ServiceBase):
     @rpc(Unicode,_returns=Iterable(Unicode))
     def extraire_information(ctx, demande):
         infos = escape(nlp_extract(demande))
-        yield f"Voici les infos extraites de la demande, {infos}"
+        yield f'''{infos}'''
 
 application = Application([extractionInformationService],
                         tns='spyne.examples.hello',
