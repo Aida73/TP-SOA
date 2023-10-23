@@ -1,4 +1,7 @@
+import xml.etree.ElementTree as ET
 import requests
+import json
+
 service_extract_inf_url = "http://0.0.0.0:8001/extractionInformationService"
 extract_enveloppeSOAP = '''\
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:spy="spyne.examples.hello">
@@ -11,12 +14,19 @@ extract_enveloppeSOAP = '''\
         </soapenv:Body>
 </soapenv:Envelope>'''
 
-
 def aproval(url,demande):
     headers = {'content-type':'application/soap+xml; charset=utf-8'}
-    response = requests.post(url, data=extract_enveloppeSOAP, headers=headers)
+    response = requests.post(url, data=demande, headers=headers)
     return response.text
+
+
 
 if __name__ == '__main__':
     extract_data_result = aproval(service_extract_inf_url,extract_enveloppeSOAP)
-    print(extract_data_result)
+    namespaces = {'soapenv': 'http://schemas.xmlsoap.org/soap/envelope/', 'tns': 'spyne.examples.hello'}
+    root = ET.fromstring(extract_data_result)
+    response_element = root.find('.//tns:string', namespaces)
+    response_text = response_element.text
+    client_infos = json.loads(response_text)
+    print(client_infos['montant'])
+    
