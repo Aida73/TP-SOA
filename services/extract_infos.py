@@ -1,14 +1,14 @@
+from xml.sax.saxutils import escape
+from spyne.util.wsgi_wrapper import run_twisted
+from spyne.server.wsgi import WsgiApplication
+from spyne.protocol.soap import Soap11
+from spyne import Application, rpc, ServiceBase, Unicode, Integer, Iterable
+import sys
 import re
 import spacy
 import json
 import logging
 logging.basicConfig(level=logging.DEBUG)
-import sys
-from spyne import Application, rpc, ServiceBase, Unicode, Integer, Iterable
-from spyne.protocol.soap import Soap11
-from spyne.server.wsgi import WsgiApplication
-from spyne.util.wsgi_wrapper import run_twisted
-from xml.sax.saxutils import escape
 
 
 def nlp_extract(texte):
@@ -20,10 +20,16 @@ def nlp_extract(texte):
 
     # Initialisation d'un dictionnaire pour stocker les informations extraites
     resultat = {
-        "prenom": "",
+        # client_id: à ajouter
+        "prenom": "",  # à modifier juste mettre le nom
         "nom": "",
+        "email": "",
+        "adresse": "",
         "montant": "",
-        "logement": ""
+        "duree": "",  # à ajouter
+        "logement": "",
+        "revenu_mensuel": "",  # à ajouter
+        "depense_mensuel": ""  # à ajouter
     }
 
     # Parcourir les tokens du texte
@@ -43,7 +49,8 @@ def nlp_extract(texte):
     # Recherche du type de logement
     logement_idx = texte.find("pour un logement")
     if logement_idx != -1:
-        resultat["logement"] = texte[logement_idx + len("pour un logement"):].strip()
+        resultat["logement"] = texte[logement_idx +
+                                     len("pour un logement"):].strip()
 
     # Convertir le dictionnaire en JSON
     resultat_json = json.dumps(resultat, ensure_ascii=False, indent=4)
@@ -51,26 +58,27 @@ def nlp_extract(texte):
     # Afficher le résultat au format JSON
     return resultat_json
 
+
 class extractionInformationService(ServiceBase):
-    @rpc(Unicode,_returns=Iterable(Unicode))
+    @rpc(Unicode, _returns=Iterable(Unicode))
     def extraire_information(ctx, demande):
         infos = escape(nlp_extract(demande))
         yield f'''{infos}'''
 
+
 application = Application([extractionInformationService],
-                        tns='spyne.examples.hello',
-                        in_protocol=Soap11(validator='lxml'),
-                        out_protocol=Soap11()
-                    )
+                          tns='spyne.examples.hello',
+                          in_protocol=Soap11(validator='lxml'),
+                          out_protocol=Soap11()
+                          )
 
 
 if __name__ == '__main__':
 
     wsgi_app = WsgiApplication(application)
 
-
     twisted_apps = [
         (wsgi_app, b'extractionInformationService'),
     ]
 
-    sys.exit(run_twisted(twisted_apps,8001))
+    sys.exit(run_twisted(twisted_apps, 8001))

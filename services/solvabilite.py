@@ -1,19 +1,50 @@
-import sqlite3
-from utils import createDatabase
-db = createDatabase.create_solv_db()
-# Connect to the database
-conn = sqlite3.connect('tp1Db.db')
+from utils import createDatabases
+from spyne.util.wsgi_wrapper import run_twisted
+from spyne.server.wsgi import WsgiApplication
+from spyne.protocol.soap import Soap11
+from spyne import Application, rpc, ServiceBase, Unicode, Integer, Iterable
+import sys
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
-# Create a cursor
-cursor = conn.cursor()
 
-# Get a list of tables in the database
-cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-tables = cursor.fetchall()
+def client_solvabilite(client_id):
+    solvabilite = {}
+    client_credit_data = createDatabases.CreditBureauDatabase.get_client_credit_data(
+        client_id)
+    if (client_credit_data == (0, 0, False)):
+        solvabilite['clean'] = True
+    else:
+        solvabilite['clean'] = False
+    revenu_mensuel, depense_mensuel = createDatabases.clientFinancialDatabase.get_client_financial_data(
+        client_id)
+    if depense_mensuel > revenu_mensuel:
+        solvabilite['finacial_cap'] = True
+    else:
+        solvabilite['finacial_cap'] = False
+    return solvabilite
 
-# Print the list of tables
-for table in tables:
-    print("Table:", table[0])
 
-# Close the connection
-conn.close()
+class solvabiliteService(ServiceBase):
+    @rpc(Unicode, Integer, _returns=Iterable(Unicode))
+    def etudier_solvabilite(ctx, client_id):
+        solvabilite = client_solvabilite(client_id)
+        yield f"{solvabilite}"
+
+
+application = Application([solvabiliteService],
+                          tns='spyne.examples.hello',
+                          in_protocol=Soap11(validator='lxml'),
+                          out_protocol=Soap11()
+                          )
+
+
+if __name__ == '__main__':
+
+    wsgi_app = WsgiApplication(application)
+
+    twisted_apps = [
+        (wsgi_app, b'solvabiliteService'),
+    ]
+
+    sys.exit(run_twisted(twisted_apps, 8009))
