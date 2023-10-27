@@ -6,7 +6,7 @@ from watchdog.events import FileSystemEventHandler
 # Define the directory to monitor (assuming it's in the same directory as your script)
 
 
-folder_to_watch = "dossier_des_fichiers" #Ajouter le dossier
+folder_to_watch = "./depots"  # Ajouter le dossier
 
 # Get the absolute path to the folder
 folder_path = os.path.abspath(folder_to_watch)

@@ -15,6 +15,7 @@ openai.api_key = OPENAI_API_KEY
 
 
 def getLoanInformations(letter):
+    print(letter)
     system_msg = 'You are a helpful assistant.'
 
     user_msg = f"""I want to extract information about the tenant from this letter, 
@@ -29,13 +30,14 @@ def getLoanInformations(letter):
     You just have to return the json that content elements. 
     Here is the schema you have to respect when returning results:
       {{{{"name": "John Doe",
-        "customerId": "client_001",
+        "customerId": "client-00X",
         "description": {{
             "accommodationType": "apartment",
             "surfaceArea": "300m2",
             "address": {{
             "town": "Paris",
-            "postalCode": "75015"
+            "postalCode": "75015",
+            "completeAdress":"6e arrondissement de Paris"
             }}
         }},
         "contact": {{

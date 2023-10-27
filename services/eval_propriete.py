@@ -19,6 +19,7 @@ def verif_litiges(adresse_logement):
     else:
         return False
 
+
 def estimer_valeur_propriete(taille_logement, ville, adresse):
     estimation = {
         "valeur": "",
@@ -35,20 +36,18 @@ def estimer_valeur_propriete(taille_logement, ville, adresse):
     # Valeur par défaut si la ville n'est pas répertoriée
     valeur_par_metre_carre = valeurs_reference.get(ville, 200)
 
-    #Estimation de la valeur de la propriete en se basant sur les prix du marche
+    # Estimation de la valeur de la propriete en se basant sur les prix du marche
     estimation["valeur"] = taille_logement * valeur_par_metre_carre
     estimation["litiges"] = verif_litiges(adresse)
 
-
-    #Voir si le logement a des litiges ou pas
+    # Voir si le logement a des litiges ou pas
     return estimation
-
 
 
 class evaluationProprieteService(ServiceBase):
     @rpc(Unicode, Integer, Unicode, _returns=Iterable(Unicode))
     def evaluer_propriete(ctx, ville, taille_logement, adresse):
-        valeur = estimer_valeur_propriete(taille_logement, ville, adresse)
+        valeur = estimer_valeur_propriete(ville, taille_logement, adresse)
         yield f"{valeur}"
 
 

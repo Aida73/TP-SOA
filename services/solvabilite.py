@@ -9,24 +9,33 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def client_solvabilite(client_id):
-    solvabilite = {}
+    # solvabilite = {}
+    score = 0
     client_credit_data = createDatabases.CreditBureauDatabase.get_client_credit_data(
         client_id)
     if (client_credit_data == (0, 0, False)):
-        solvabilite['clean'] = True
-    else:
-        solvabilite['clean'] = False
+        score = 100
+        # solvabilite['clean'] = True
+    elif (client_credit_data[1] >= 2 and client_credit_data[2] == True):
+        score = 0
+    elif (client_credit_data[1] < 2 and client_credit_data[0] < 1000):
+        score = 80
+    elif (client_credit_data[1] < 2 and client_credit_data[0] > 1000):
+        score = 60
+    # else:
+    #     solvabilite['clean'] = False
     revenu_mensuel, depense_mensuel = createDatabases.clientFinancialDatabase.get_client_financial_data(
         client_id)
-    if depense_mensuel > revenu_mensuel:
-        solvabilite['finacial_cap'] = False
-    else:
-        solvabilite['finacial_cap'] = True
-    if solvabilite['finacial_cap'] == True and solvabilite['clean'] == True:
-        solvabilite['solvable'] = True
-    else:
-        solvabilite['solvable'] = False
-    return solvabilite
+    financial_cap = revenu_mensuel-depense_mensuel
+    # if depense_mensuel > revenu_mensuel:
+    #     solvabilite['finacial_cap'] = False
+    # else:
+    #     solvabilite['finacial_cap'] = True
+    # if solvabilite['finacial_cap'] == True and solvabilite['clean'] == True:
+    #     solvabilite['solvable'] = True
+    # else:
+    #     solvabilite['solvable'] = False
+    return {'financial_cap': financial_cap, 'score': score}
 
 
 class solvabiliteService(ServiceBase):
