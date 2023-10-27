@@ -19,9 +19,13 @@ def client_solvabilite(client_id):
     revenu_mensuel, depense_mensuel = createDatabases.clientFinancialDatabase.get_client_financial_data(
         client_id)
     if depense_mensuel > revenu_mensuel:
-        solvabilite['finacial_cap'] = True
-    else:
         solvabilite['finacial_cap'] = False
+    else:
+        solvabilite['finacial_cap'] = True
+    if solvabilite['finacial_cap'] == True and solvabilite['clean'] == True:
+        solvabilite['solvable'] = True
+    else:
+        solvabilite['solvable'] = False
     return solvabilite
 
 
@@ -29,7 +33,7 @@ class solvabiliteService(ServiceBase):
     @rpc(Unicode, _returns=Iterable(Unicode))
     def etudier_solvabilite(ctx, clientId):
         solvabilite = client_solvabilite(clientId)
-        yield f"{solvabilite}"
+        yield f'''{solvabilite}'''
 
 
 application = Application([solvabiliteService],

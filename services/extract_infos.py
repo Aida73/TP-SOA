@@ -6,6 +6,7 @@ from spyne import Application, rpc, ServiceBase, Unicode, Integer, Iterable
 import sys
 import openai
 import os
+import re
 from dotenv import load_dotenv
 load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
@@ -23,7 +24,29 @@ def getLoanInformations(letter):
     use camelcase. For the description, for example, create a json with the type 
     of accommodation, such as home or apartment, the surface area, such as 300m2, and the address 
     of the accommodation, such as town,code postal, all the interesting information
-    about the accommodation."""
+    about the accommodation.
+    You also must not return text with the result.
+    You just have to return the json that content elements. 
+    Here is the schema you have to respect when returning results:
+      {{{{"name": "John Doe",
+        "customerId": "client_001",
+        "description": {{
+            "accommodationType": "apartment",
+            "surfaceArea": "300m2",
+            "address": {{
+            "town": "Paris",
+            "postalCode": "75015"
+            }}
+        }},
+        "contact": {{
+            "phone": "+33 5 67784890",
+            "email": "johndoe@gmail.com"
+        }},
+        "loanAmount": 12000,
+        "monthlyIncome": 3700,
+        "monthlyExpenses": 2400,
+        "propertyPrice": 20000
+        }}}}"""
 
     # Create a dataset using GPT
     response = openai.ChatCompletion.create(model="gpt-3.5-turbo",
