@@ -26,9 +26,9 @@ def client_solvabilite(client_id):
 
 
 class solvabiliteService(ServiceBase):
-    @rpc(Unicode, Integer, _returns=Iterable(Unicode))
-    def etudier_solvabilite(ctx, client_id):
-        solvabilite = client_solvabilite(client_id)
+    @rpc(Unicode, _returns=Iterable(Unicode))
+    def etudier_solvabilite(ctx, clientId):
+        solvabilite = client_solvabilite(clientId)
         yield f"{solvabilite}"
 
 
@@ -47,4 +47,4 @@ if __name__ == '__main__':
         (wsgi_app, b'solvabiliteService'),
     ]
 
-    sys.exit(run_twisted(twisted_apps, 8009))
+    sys.exit(run_twisted(twisted_apps, 8003))

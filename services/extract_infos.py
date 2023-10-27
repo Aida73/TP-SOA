@@ -4,69 +4,44 @@ from spyne.server.wsgi import WsgiApplication
 from spyne.protocol.soap import Soap11
 from spyne import Application, rpc, ServiceBase, Unicode, Integer, Iterable
 import sys
-import re
-import spacy
-import json
-import logging
-logging.basicConfig(level=logging.DEBUG)
+import openai
+import os
+from dotenv import load_dotenv
+load_dotenv()
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+openai.api_key = OPENAI_API_KEY
 
 
-def nlp_extract(texte):
-    # Charger le modèle spaCy
-    nlp = spacy.load("fr_core_news_md")
+def getLoanInformations(letter):
+    system_msg = 'You are a helpful assistant.'
 
-    # Traitement du texte avec spaCy
-    doc = nlp(texte)
+    user_msg = f"""I want to extract information about the tenant from this letter, 
+    such as his name, customer ID, description of what he wants to buy, address, 
+    monthly income and expenses, price of the property he wants to buy, etc. 
+    Here's the text: {letter}. You'll need to extract the result into a json. For the keys,you must 
+    use camelcase. For the description, for example, create a json with the type 
+    of accommodation, such as home or apartment, the surface area, such as 300m2, and the address 
+    of the accommodation, such as town,code postal, all the interesting information
+    about the accommodation."""
 
-    # Initialisation d'un dictionnaire pour stocker les informations extraites
-    resultat = {
-        # client_id: à ajouter
-        "prenom": "",  # à modifier juste mettre le nom
-        "nom": "",
-        "email": "",
-        "adresse": "",
-        "montant": "",
-        "duree": "",  # à ajouter
-        "logement": "",
-        "revenu_mensuel": "",  # à ajouter
-        "depense_mensuel": ""  # à ajouter
-    }
-
-    # Parcourir les tokens du texte
-    for token in doc:
-        if token.ent_type_ == "PER":  # Entité de type personne
-            if not resultat["prenom"]:
-                resultat["prenom"] = token.text
-            else:
-                resultat["nom"] = token.text
-
-    # Utilisation d'une expression régulière pour extraire le montant
-    montant_pattern = r'\d{1,10}(?:[.,]\d{1,2})? euros'
-    montant_match = re.search(montant_pattern, texte)
-    if montant_match:
-        resultat["montant"] = montant_match.group(0)
-
-    # Recherche du type de logement
-    logement_idx = texte.find("pour un logement")
-    if logement_idx != -1:
-        resultat["logement"] = texte[logement_idx +
-                                     len("pour un logement"):].strip()
-
-    # Convertir le dictionnaire en JSON
-    resultat_json = json.dumps(resultat, ensure_ascii=False, indent=4)
-
-    # Afficher le résultat au format JSON
-    return resultat_json
+    # Create a dataset using GPT
+    response = openai.ChatCompletion.create(model="gpt-3.5-turbo",
+                                            messages=[{"role": "system", "content": system_msg},
+                                                      {"role": "user", "content": user_msg}])
+    status_code = response["choices"][0]["finish_reason"]
+    assert status_code == "stop", f"The status code was {status_code}."
+    return response["choices"][0]["message"]["content"]
 
 
-class extractionInformationService(ServiceBase):
+class extractInformationsService(ServiceBase):
     @rpc(Unicode, _returns=Iterable(Unicode))
     def extraire_information(ctx, demande):
-        infos = escape(nlp_extract(demande))
+        infos = escape(getLoanInformations(demande))
         yield f'''{infos}'''
 
 
-application = Application([extractionInformationService],
+application = Application([extractInformationsService],
                           tns='spyne.examples.hello',
                           in_protocol=Soap11(validator='lxml'),
                           out_protocol=Soap11()
@@ -78,7 +53,7 @@ if __name__ == '__main__':
     wsgi_app = WsgiApplication(application)
 
     twisted_apps = [
-        (wsgi_app, b'extractionInformationService'),
+        (wsgi_app, b'extractInformationsService'),
     ]
 
-    sys.exit(run_twisted(twisted_apps, 8001))
+    sys.exit(run_twisted(twisted_apps, 8002))
