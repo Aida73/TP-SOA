@@ -47,7 +47,7 @@ def estimer_valeur_propriete(taille_logement, ville, adresse):
 class evaluationProprieteService(ServiceBase):
     @rpc(Unicode, Integer, Unicode, _returns=Iterable(Unicode))
     def evaluer_propriete(ctx, ville, taille_logement, adresse):
-        valeur = estimer_valeur_propriete(ville, taille_logement, adresse)
+        valeur = estimer_valeur_propriete(taille_logement, ville, adresse)
         yield f"{valeur}"
 
 
