@@ -6,7 +6,9 @@ immobilier exprimées en langage naturel. Le service intègre des composants d�
 de vérification de solvabilité, d'évaluation de la propriété et de décision d'approbation pour fournir une évaluation complète 
 et précise des demandes de prêt.
 
+# Demo
 
+![Page_Web](/screenshots/demo-tp-soa.gif?raw=true)
 
 ## Variables d'environnement
 
