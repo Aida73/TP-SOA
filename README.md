@@ -74,6 +74,6 @@ Lancer tous les services:
     python services/composite.py
 ```
 
-Pour que le pipeline commence à s'exécuter, il faut, après avoir activer tous les services ajouter une nouvelle lettre dans le dossier `depots`
+Pour que le pipeline commence à s'exécuter, il faut, après avoir activé tous les services, ajouter une nouvelle lettre dans le dossier `depots`.
 
 
